@@ -4,6 +4,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,6 +18,29 @@ let isReady = false;
 let currentQr = null;
 let stateStatus = 'initializing';
 let sessionExpiry = null;
+
+function getSystemChromePath() {
+    if (process.platform === 'win32') {
+        const paths = [
+            'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+            'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
+        ];
+        for (const p of paths) {
+            if (fs.existsSync(p)) return p;
+        }
+    } else if (process.platform === 'darwin') {
+        const paths = [
+            '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+            '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+        ];
+        for (const p of paths) {
+            if (fs.existsSync(p)) return p;
+        }
+    }
+    return null;
+}
 
 function setStatus(newStatus) {
     stateStatus = newStatus;
@@ -34,6 +58,7 @@ function initializeClient() {
             clientId: 'bot-session'
         }),
         puppeteer: {
+            executablePath: getSystemChromePath(),
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
         }
     });
