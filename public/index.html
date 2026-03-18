@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bot Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard">
+        <header class="header">
+            <div class="logo">
+                <i class="fa-brands fa-whatsapp"></i>
+                <div>
+                    <h2>Bot Manager</h2>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; margin-top: 2px;">
+                        Running on: 127.0.0.1:3000
+                    </div>
+                </div>
+            </div>
+            <div class="status-badge connecting" id="status-badge">
+                <span class="dot"></span>
+                <span id="status-text">Connecting...</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="card" id="qr-card">
+                <h3><i class="fa-solid fa-qrcode"></i> Scan QR Code</h3>
+                <p>Open WhatsApp on your phone and link a device by scanning this code.</p>
+                <div class="qr-container">
+                    <div id="qrcode"></div>
+                    <div class="loader" id="qr-loader"></div>
+                </div>
+            </div>
+
+            <div class="card hidden" id="connected-card">
+                <div class="success-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h3>Bot is Active!</h3>
+                <p>Your WhatsApp session is securely connected and the bot is running in the background.</p>
+
+                <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <p style="margin-bottom: 0; font-size: 0.9rem; font-weight: 500;">
+                        <i class="fa-solid fa-clock"></i> Time until offline expiration:
+                        <span id="expiry-countdown" style="display: block; font-size: 1.5rem; color: var(--warning); margin-top: 0.5rem; font-weight: 700;">--:--:--</span>
+                    </p>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="logout-btn" class="btn btn-danger">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout Session
+                    </button>
+                    <button class="btn btn-secondary" onclick="alert('You can run test queries or see the active logic from here!')">
+                        <i class="fa-solid fa-gears"></i> Info
+                    </button>
+                </div>
+            </div>
+
+            <div class="card" id="log-card">
+                <h3><i class="fa-solid fa-terminal"></i> Activity Log</h3>
+                <div class="logs" id="logs">
+                    <!-- Logs appear here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

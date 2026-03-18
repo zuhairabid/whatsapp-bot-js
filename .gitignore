@@ -1,0 +1,12 @@
+node_modules
+dist
+.wwebjs_auth
+.wwebjs_cache
+.vscode
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.idea
+.env
