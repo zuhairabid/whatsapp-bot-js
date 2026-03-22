@@ -15,55 +15,74 @@
                 <i class="fa-brands fa-whatsapp"></i>
                 <div>
                     <h2>Bot Manager</h2>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; margin-top: 2px;">
-                        Running on: 127.0.0.1:3000
+                    <div id="port-indicator" style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; margin-top: 2px;">
+                        Server not running
                     </div>
                 </div>
             </div>
-            <div class="status-badge connecting" id="status-badge">
+            <div class="status-badge disconnected" id="status-badge">
                 <span class="dot"></span>
-                <span id="status-text">Connecting...</span>
+                <span id="status-text">Disconnected</span>
             </div>
         </header>
 
         <main class="main-content">
-            <div class="card" id="qr-card">
-                <h3><i class="fa-solid fa-qrcode"></i> Scan QR Code</h3>
-                <p>Open WhatsApp on your phone and link a device by scanning this code.</p>
-                <div class="qr-container">
-                    <div id="qrcode"></div>
-                    <div class="loader" id="qr-loader"></div>
+            <!-- Setup Card -->
+            <div class="card" id="setup-card">
+                <h3><i class="fa-solid fa-server"></i> Setup Server</h3>
+                <p>Enter the port number to start the WhatsApp bot server.</p>
+                <div style="margin: 1.5rem 0;">
+                    <div class="input-group">
+                        <label for="port-input" style="display: block; margin-bottom: 0.75rem; font-size: 0.9rem; font-weight: 500;">Port Number</label>
+                        <input type="number" id="port-input" value="3000" placeholder="e.g. 3000" 
+                            style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-size: 1rem; outline: none;">
+                    </div>
                 </div>
+                <button id="run-server-btn" class="btn btn-primary" style="width: 100%;">
+                    <i class="fa-solid fa-play"></i> Run Server
+                </button>
             </div>
 
-            <div class="card hidden" id="connected-card">
-                <div class="success-icon">
-                    <i class="fa-solid fa-circle-check"></i>
+            <!-- Bot Dashboard (Hidden until server runs) -->
+            <div id="bot-dashboard" class="hidden">
+                <div class="card" id="qr-card">
+                    <h3><i class="fa-solid fa-qrcode"></i> Scan QR Code</h3>
+                    <p>Open WhatsApp on your phone and link a device by scanning this code.</p>
+                    <div class="qr-container">
+                        <div id="qrcode"></div>
+                        <div class="loader" id="qr-loader"></div>
+                    </div>
                 </div>
-                <h3>Bot is Active!</h3>
-                <p>Your WhatsApp session is securely connected and the bot is running in the background.</p>
 
-                <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-                    <p style="margin-bottom: 0; font-size: 0.9rem; font-weight: 500;">
-                        <i class="fa-solid fa-clock"></i> Time until offline expiration:
-                        <span id="expiry-countdown" style="display: block; font-size: 1.5rem; color: var(--warning); margin-top: 0.5rem; font-weight: 700;">--:--:--</span>
-                    </p>
-                </div>
-                
-                <div class="action-buttons">
-                    <button id="logout-btn" class="btn btn-danger">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout Session
-                    </button>
-                    <button class="btn btn-secondary" onclick="alert('You can run test queries or see the active logic from here!')">
-                        <i class="fa-solid fa-gears"></i> Info
-                    </button>
-                </div>
-            </div>
+                <div class="card hidden" id="connected-card">
+                    <div class="success-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <h3>Bot is Active!</h3>
+                    <p>Your WhatsApp session is securely connected and the bot is running in the background.</p>
 
-            <div class="card" id="log-card">
-                <h3><i class="fa-solid fa-terminal"></i> Activity Log</h3>
-                <div class="logs" id="logs">
-                    <!-- Logs appear here -->
+                    <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                        <p style="margin-bottom: 0; font-size: 0.9rem; font-weight: 500;">
+                            <i class="fa-solid fa-clock"></i> Time until offline expiration:
+                            <span id="expiry-countdown" style="display: block; font-size: 1.5rem; color: var(--warning); margin-top: 0.5rem; font-weight: 700;">--:--:--</span>
+                        </p>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button id="logout-btn" class="btn btn-danger">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout Session
+                        </button>
+                        <button class="btn btn-secondary" onclick="alert('You can run test queries or see the active logic from here!')">
+                            <i class="fa-solid fa-gears"></i> Info
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card" id="log-card">
+                    <h3><i class="fa-solid fa-terminal"></i> Activity Log</h3>
+                    <div class="logs" id="logs">
+                        <!-- Logs appear here -->
+                    </div>
                 </div>
             </div>
         </main>
@@ -71,7 +90,8 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- Use CDN Socket.io because the server isn't up yet when file is loaded -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

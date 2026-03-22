@@ -1,5 +1,11 @@
-const socket = io();
+let socket = null;
 let qrCodeInstance = null;
+
+const setupCard = document.getElementById('setup-card');
+const botDashboard = document.getElementById('bot-dashboard');
+const portInput = document.getElementById('port-input');
+const runServerBtn = document.getElementById('run-server-btn');
+const portIndicator = document.getElementById('port-indicator');
 
 const statusBadge = document.getElementById('status-badge');
 const statusText = document.getElementById('status-text');
@@ -48,65 +54,97 @@ function log(message) {
     logsElement.prepend(entry);
 }
 
-socket.on('status', (status) => {
-    log(`Status changed: ${status}`);
-    updateStatus(status);
-});
+function connectSocket(port) {
+    log(`Connecting to server on port ${port}...`);
+    socket = io(`http://localhost:${port}`);
 
-socket.on('qr', (qrString) => {
-    log('New QR code received. Please scan.');
-    qrcodeElement.innerHTML = '';
-    qrcodeElement.style.opacity = '1';
-    qrLoader.style.display = 'none';
-    
-    qrCodeInstance = new QRCode(qrcodeElement, {
-        text: qrString,
-        width: 200,
-        height: 200,
-        colorDark : "#000000",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.H
+    socket.on('status', (status) => {
+        log(`Status changed: ${status}`);
+        updateStatus(status);
     });
-});
 
-socket.on('expiry', (timestamp) => {
-    if (countdownInterval) clearInterval(countdownInterval);
-    
-    function updateCountdown() {
-        const now = Date.now();
-        const diff = timestamp - now;
+    socket.on('qr', (qrString) => {
+        log('New QR code received. Please scan.');
+        qrcodeElement.innerHTML = '';
+        qrcodeElement.style.opacity = '1';
+        qrLoader.style.display = 'none';
         
-        if (diff <= 0) {
-            if(expiryCountdown) expiryCountdown.textContent = "Expired";
-            clearInterval(countdownInterval);
-            return;
+        qrCodeInstance = new QRCode(qrcodeElement, {
+            text: qrString,
+            width: 200,
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    });
+
+    socket.on('expiry', (timestamp) => {
+        if (countdownInterval) clearInterval(countdownInterval);
+        
+        function updateCountdown() {
+            const now = Date.now();
+            const diff = timestamp - now;
+            
+            if (diff <= 0) {
+                if(expiryCountdown) expiryCountdown.textContent = "Expired";
+                clearInterval(countdownInterval);
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const mins = Math.floor((diff / 1000 / 60) % 60);
+            const secs = Math.floor((diff / 1000) % 60);
+            
+            if(expiryCountdown) {
+                expiryCountdown.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
+            }
         }
         
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-        const mins = Math.floor((diff / 1000 / 60) % 60);
-        const secs = Math.floor((diff / 1000) % 60);
-        
-        if(expiryCountdown) {
-            expiryCountdown.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
-        }
+        updateCountdown();
+        countdownInterval = setInterval(updateCountdown, 1000);
+    });
+
+    socket.on('log', (message) => {
+        log(message);
+    });
+}
+
+// Button Click Event
+runServerBtn.addEventListener('click', () => {
+    const port = portInput.value;
+    if (!port) {
+        alert('Please enter a valid port number.');
+        return;
     }
-    
-    updateCountdown();
-    countdownInterval = setInterval(updateCountdown, 1000);
+
+    runServerBtn.disabled = true;
+    runServerBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Starting...';
+
+    // Tell Electron to start the server
+    window.electronAPI.startServer(port);
 });
 
-socket.on('log', (message) => {
-    log(message);
+// Listener for when server becomes active
+window.electronAPI.onServerStarted((port) => {
+    portIndicator.textContent = `Running on: 127.0.0.1:${port}`;
+    setupCard.classList.add('hidden');
+    botDashboard.classList.remove('hidden');
+    
+    // Connect to the newly started server
+    connectSocket(port);
 });
 
 logoutBtn.addEventListener('click', () => {
     if(confirm('Are you sure you want to log out the WhatsApp session? You will need to re-scan the QR code.')) {
-        socket.emit('logout');
-        log('Logout signal sent...');
-        logoutBtn.disabled = true;
-        setTimeout(() => { logoutBtn.disabled = false; }, 3000);
+        if (socket) {
+            socket.emit('logout');
+            log('Logout signal sent...');
+            logoutBtn.disabled = true;
+            setTimeout(() => { logoutBtn.disabled = false; }, 3000);
+        }
     }
 });
 
-log('Dashboard UI loaded, connecting to background server...');
+log('Dashboard UI loaded. Please configure the port and click Run Server.');

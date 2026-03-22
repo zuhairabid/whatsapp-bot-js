@@ -195,9 +195,13 @@ app.get('/api/status', (req, res) => {
     res.json({ online: isReady, timestamp: new Date().toISOString() });
 });
 
-// Start Server and Client
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`API/Dashboard Server running on http://localhost:${PORT}`);
-    initializeClient();
-});
+// Function to start the server
+function startServer(port) {
+    server.listen(port, () => {
+        console.log(`API/Dashboard Server running on http://localhost:${port}`);
+        initializeClient();
+    });
+}
+
+// Export functions for use in main.js
+module.exports = { startServer, app, io };
